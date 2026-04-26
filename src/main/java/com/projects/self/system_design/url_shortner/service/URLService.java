@@ -48,11 +48,11 @@ public class URLService {
             return String.valueOf(BASE62_CHARACTERS.charAt(0));
         }
         StringBuilder sb = new StringBuilder();
-        long num = dbId; // num = 125
-        while (num > 0) { // num = 125, 2
-            int remainder = (int) (num % 62); //remainder = 125 % 2 = 1, remainder 2
-            sb.append(BASE62_CHARACTERS.charAt(remainder)); // sb = "bc"
-            num /= 62; // num / 62 = 2
+        long num = dbId;
+        while (num > 0) {
+            int remainder = (int) (num % 62);
+            sb.append(BASE62_CHARACTERS.charAt(remainder));
+            num /= 62;
         }
         return sb.reverse().toString();
     }
