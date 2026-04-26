@@ -1,8 +1,7 @@
 package com.projects.self.system_design.url_shortner.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 
@@ -11,12 +10,11 @@ import java.time.LocalDateTime;
         @Index(name = "idx_short_code", columnList = "short_code", unique = true),
         @Index(name = "idx_long_url", columnList = "long_url")
 })
-@NoArgsConstructor
-@AllArgsConstructor
+@Data
 public class URLEntity {
 
     @Id()
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "short_code", unique = true)
@@ -26,7 +24,11 @@ public class URLEntity {
     private String longURL;
 
     @Column(name = "click_count")
-    private Long clickCount;
+    private Long clickCount = 0L;
+
+    public void incrementClickCount() {
+        this.clickCount++;
+    }
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
