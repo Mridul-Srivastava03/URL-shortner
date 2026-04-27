@@ -62,9 +62,11 @@ public class URLService {
     public String getLongUrl(String shortCode) {
 
         String key = "url:" + shortCode;
+        String counterKey = "url:click:" + shortCode;
 
         String longUrl = redisTemplate.opsForValue().get(key);
         if (longUrl != null && !longUrl.isBlank()) {
+            redisTemplate.opsForValue().increment(counterKey);
             return longUrl;
         }
 
@@ -77,19 +79,24 @@ public class URLService {
             throw new RuntimeException("Short Code is expired");
         }
 
-        entity.incrementClickCount();
-        repository.save(entity);
-
         longUrl = entity.getLongURL();
+
+        if (Boolean.FALSE.equals(redisTemplate.hasKey(counterKey))) {
+            redisTemplate.opsForValue().set(counterKey, String.valueOf(entity.getClickCount()));
+        }
+
+        redisTemplate.opsForValue().increment(counterKey);
 
         if (entity.getExpiryAt() != null) {
             long ttl = Duration.between(now, entity.getExpiryAt()).toSeconds();
 
             if (ttl > 0) {
-                redisTemplate.opsForValue().set(key, longUrl, ttl, java.util.concurrent.TimeUnit.SECONDS);
+                redisTemplate.opsForValue().set(key, longUrl, ttl, TimeUnit.SECONDS);
+                redisTemplate.expire(counterKey, ttl, TimeUnit.SECONDS);
             }
         } else {
-            redisTemplate.opsForValue().set(key, longUrl, 10, TimeUnit.SECONDS);
+            redisTemplate.opsForValue().set(key, longUrl, 1, TimeUnit.DAYS);
+            redisTemplate.expire(counterKey, 1, TimeUnit.DAYS);
         }
 
         return longUrl;
