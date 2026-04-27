@@ -61,7 +61,7 @@ public class URLService {
 
     public String getLongUrl(String shortCode) {
 
-        String key = "url:longUrl" + shortCode;
+        String key = "url:longUrl:" + shortCode;
         String counterKey = "url:click:" + shortCode;
 
         String longUrl = redisTemplate.opsForValue().get(key);
