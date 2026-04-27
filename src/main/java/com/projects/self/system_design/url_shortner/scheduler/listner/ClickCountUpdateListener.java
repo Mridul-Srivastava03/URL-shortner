@@ -1,15 +1,15 @@
 package com.projects.self.system_design.url_shortner.scheduler.listner;
 
 import com.projects.self.system_design.url_shortner.scheduler.service.ClickCountUpdateService;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
-@EnableScheduling
-public class ClickCountUpdateListner {
+@Component
+public class ClickCountUpdateListener {
 
     private final ClickCountUpdateService service;
 
-    public ClickCountUpdateListner(ClickCountUpdateService service) {
+    public ClickCountUpdateListener(ClickCountUpdateService service) {
         this.service = service;
     }
 
