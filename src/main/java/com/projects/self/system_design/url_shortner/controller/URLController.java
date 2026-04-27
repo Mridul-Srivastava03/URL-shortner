@@ -1,15 +1,18 @@
 package com.projects.self.system_design.url_shortner.controller;
 
+import com.projects.self.system_design.url_shortner.customValidations.validations.Base62Encoded;
 import com.projects.self.system_design.url_shortner.dto.request.URLRequest;
 import com.projects.self.system_design.url_shortner.dto.response.URLDTO;
 import com.projects.self.system_design.url_shortner.service.URLService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 
+@Validated
 @RestController
 @RequestMapping(("/api/url"))
 public class URLController {
@@ -31,7 +34,7 @@ public class URLController {
 
     //TODO: Write custom validation for ShortCode to make it base 62 encoded
     @GetMapping(path = "/{shortCode}")
-    public ResponseEntity<?> redirectToLongUrl(@PathVariable String shortCode) {
+    public ResponseEntity<?> redirectToLongUrl(@PathVariable @Base62Encoded String shortCode) {
         String longUrl = service.getLongUrl(shortCode);
         return ResponseEntity
                 .status(HttpStatus.FOUND)
