@@ -4,9 +4,9 @@ import com.projects.self.system_design.url_shortner.customException.ResourceNotF
 import com.projects.self.system_design.url_shortner.customException.ShortCodeExpiredException;
 import com.projects.self.system_design.url_shortner.dto.response.URLDTO;
 import com.projects.self.system_design.url_shortner.entity.URLEntity;
+import com.projects.self.system_design.url_shortner.helperService.RedisService;
 import com.projects.self.system_design.url_shortner.repository.URLRepository;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -21,12 +21,12 @@ public class URLService {
 
     private final URLRepository repository;
     private final ModelMapper mapper;
-    private final StringRedisTemplate redisTemplate;
+    private final RedisService redisService;
 
-    public URLService(URLRepository repository, ModelMapper mapper, StringRedisTemplate redisTemplate) {
+    public URLService(URLRepository repository, ModelMapper mapper, RedisService redisService) {
         this.repository = repository;
         this.mapper = mapper;
-        this.redisTemplate = redisTemplate;
+        this.redisService = redisService;
     }
 
 
@@ -66,9 +66,9 @@ public class URLService {
         String key = "url:longUrl:" + shortCode;
         String counterKey = "url:click:" + shortCode;
 
-        String longUrl = redisTemplate.opsForValue().get(key);
+        String longUrl = redisService.getValue(key);
         if (longUrl != null && !longUrl.isBlank()) {
-            redisTemplate.opsForValue().increment(counterKey);
+            redisService.increment(counterKey);
             return longUrl;
         }
 
@@ -83,22 +83,22 @@ public class URLService {
 
         longUrl = entity.getLongURL();
 
-        if (Boolean.FALSE.equals(redisTemplate.hasKey(counterKey))) {
-            redisTemplate.opsForValue().set(counterKey, String.valueOf(entity.getClickCount()));
+        if (!redisService.hasKey(counterKey)) {
+            redisService.setValue(counterKey, String.valueOf(entity.getClickCount()));
         }
 
-        redisTemplate.opsForValue().increment(counterKey);
+        redisService.increment(counterKey);
 
         if (entity.getExpiryAt() != null) {
             long ttl = Duration.between(now, entity.getExpiryAt()).toSeconds();
 
             if (ttl > 0) {
-                redisTemplate.opsForValue().set(key, longUrl, ttl, TimeUnit.SECONDS);
-                redisTemplate.expire(counterKey, ttl, TimeUnit.SECONDS);
+                redisService.setValue(key, longUrl, ttl, TimeUnit.SECONDS);
+                redisService.expire(counterKey, ttl, TimeUnit.SECONDS);
             }
         } else {
-            redisTemplate.opsForValue().set(key, longUrl, 1, TimeUnit.DAYS);
-            redisTemplate.expire(counterKey, 1, TimeUnit.DAYS);
+            redisService.setValue(key, longUrl, 1, TimeUnit.DAYS);
+            redisService.expire(counterKey, 1, TimeUnit.DAYS);
         }
 
         return longUrl;
