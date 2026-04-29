@@ -2,6 +2,8 @@ package com.projects.self.system_design.url_shortner.advices;
 
 import com.projects.self.system_design.url_shortner.customException.ResourceNotFoundException;
 import com.projects.self.system_design.url_shortner.customException.ShortCodeExpiredException;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -45,6 +47,20 @@ public class GlobalExceptionHandler {
         ApiError apiError = ApiError.builder()
                 .status(HttpStatus.NOT_FOUND)
                 .message(exception.getMessage())
+                .build();
+        return buildErrorResponse(apiError);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiResponse<?>> handleNotFoundException(ConstraintViolationException exception) {
+        List<String> errorMessages = exception.getConstraintViolations().stream()
+                .map(ConstraintViolation::getMessage)
+                .collect(Collectors.toList());
+
+        ApiError apiError = ApiError.builder()
+                .status(HttpStatus.BAD_REQUEST)
+                .message("Input validation failed")
+                .subErrors(errorMessages)
                 .build();
         return buildErrorResponse(apiError);
     }
