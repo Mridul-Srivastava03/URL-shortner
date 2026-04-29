@@ -1,5 +1,7 @@
 package com.projects.self.system_design.url_shortner.service;
 
+import com.projects.self.system_design.url_shortner.customException.ResourceNotFoundException;
+import com.projects.self.system_design.url_shortner.customException.ShortCodeExpiredException;
 import com.projects.self.system_design.url_shortner.dto.response.URLDTO;
 import com.projects.self.system_design.url_shortner.entity.URLEntity;
 import com.projects.self.system_design.url_shortner.repository.URLRepository;
@@ -71,12 +73,12 @@ public class URLService {
         }
 
         URLEntity entity = repository.findByShortCode(shortCode)
-                .orElseThrow(() -> new RuntimeException("ShortCode is invalid"));
+                .orElseThrow(() -> new ResourceNotFoundException("Short Code not found"));
 
         LocalDateTime now = LocalDateTime.now();
 
         if (entity.getExpiryAt() != null && now.isAfter(entity.getExpiryAt())) {
-            throw new RuntimeException("Short Code is expired");
+            throw new ShortCodeExpiredException("Short Code is expired");
         }
 
         longUrl = entity.getLongURL();
