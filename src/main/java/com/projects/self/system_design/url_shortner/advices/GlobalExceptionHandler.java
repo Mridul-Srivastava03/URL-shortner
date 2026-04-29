@@ -1,5 +1,7 @@
 package com.projects.self.system_design.url_shortner.advices;
 
+import com.projects.self.system_design.url_shortner.customException.ResourceNotFoundException;
+import com.projects.self.system_design.url_shortner.customException.ShortCodeExpiredException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -13,7 +15,7 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiError> handleInputValidationException (MethodArgumentNotValidException exception) {
+    public ResponseEntity<ApiError> handleInputValidationException(MethodArgumentNotValidException exception) {
         List<String> errors = exception
                 .getBindingResult()
                 .getAllErrors()
@@ -25,6 +27,24 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST)
                 .message(exception.getMessage())
                 .subErrors(errors)
+                .build();
+        return new ResponseEntity<>(apiError, apiError.getStatus());
+    }
+
+    @ExceptionHandler(ShortCodeExpiredException.class)
+    public ResponseEntity<ApiError> handleShortCodeExpiredException(ShortCodeExpiredException exception) {
+        ApiError apiError = ApiError.builder()
+                .status(HttpStatus.GONE)
+                .message(exception.getMessage())
+                .build();
+        return new ResponseEntity<>(apiError, apiError.getStatus());
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiError> handleNotFoundException(ResourceNotFoundException exception) {
+        ApiError apiError = ApiError.builder()
+                .status(HttpStatus.NOT_FOUND)
+                .message(exception.getMessage())
                 .build();
         return new ResponseEntity<>(apiError, apiError.getStatus());
     }
