@@ -31,6 +31,10 @@ public class RedisService {
         redisTemplate.opsForValue().increment(key);
     }
 
+    public Long incrementAndGet(String key) {
+        return redisTemplate.opsForValue().increment(key);
+    }
+
     public void incrementBy(String key, long value) {
         redisTemplate.opsForValue().increment(key, value);
     }
